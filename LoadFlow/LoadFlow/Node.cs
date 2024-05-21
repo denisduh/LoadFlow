@@ -16,6 +16,7 @@ namespace LoadFlow
         private double qg;
         private double pb;
         private double qb;
+        private string geometry;
         public Node(Node copy)
         {
             this.name = copy.name;
@@ -27,6 +28,7 @@ namespace LoadFlow
             this.qg = copy.qg;
             this.pb = copy.pb;
             this.qb = copy.qb;
+            this.geometry = copy.geometry;
         }
         public Node()
         {
@@ -44,6 +46,7 @@ namespace LoadFlow
             this.qg = 0;
             this.pb = 0;
             this.qb = 0;
+            this.geometry = "";
         }
 
         public string Name { get => name; set => name = value; }
@@ -56,5 +59,6 @@ namespace LoadFlow
         public double Qg { get => qg; set => qg = value; }
         public double Pb { get => pb; set => pb = value; }
         public double Qb { get => qb; set => qb = value; }
+        public string Geometry { get => geometry; set => geometry = value; }
     }
 }

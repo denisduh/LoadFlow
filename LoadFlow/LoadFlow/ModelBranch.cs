@@ -53,7 +53,7 @@ namespace LoadFlow
                  }
                 else
                 {
-                    return (Complex.Abs(Ivej) / I_max) - 1;
+                    return ((Complex.Abs(Ivej) - I_max) / I_max);
                 }
             }
         }

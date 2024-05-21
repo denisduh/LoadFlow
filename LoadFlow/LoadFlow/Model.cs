@@ -117,6 +117,9 @@ namespace LoadFlow
                 if(mb.Count>0)
                 {
                     f.TechLoss = mb.Sum(s=>s.TechLoss15min);
+                    f.Pb = mb.Sum(s => s.childBlock.Pb);
+                    f.Pg = mb.Sum(s => s.childBlock.Pg);
+                    f.MaxRelOverCurrent = mb.Max(s => s.RelOverCurrent);
                     f.FeederSumLenghth = mb.Sum(s => s.Length);
                 }
             }
