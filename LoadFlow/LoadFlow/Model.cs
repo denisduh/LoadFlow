@@ -128,21 +128,28 @@ namespace LoadFlow
         public void LoadFlowBFS()
 
         {
+
+            ///PB and PG are in KW so SBAZ is 1000 for normalisation
             double Ubil = 20.0e3 / Math.Sqrt(3);
             double UbazSN = 20000 / Math.Sqrt(3);
             double UbazNN = 400 / Math.Sqrt(3);
             double Sbaz = 1000;
+            double SbazMaxPower = ModelBlocks.Max(m => m.Pb) ;
+            if(SbazMaxPower==0)
+            {
+                SbazMaxPower = 1;
+            }
             double ZbazSN = Math.Pow(UbazSN, 2) / Sbaz;
             double ZbazNN = Math.Pow(UbazNN, 2) / Sbaz;
-            double IbazSN = Sbaz / UbazSN;
-            double IbazNN = Sbaz / UbazNN;
+            double IbazSN = Sbaz* SbazMaxPower / UbazSN;
+            double IbazNN = Sbaz* SbazMaxPower / UbazNN;
             int maxlevel = Convert.ToInt32(ModelBlocks.Max(n => n.Level));
             foreach (ModelBlock mb in ModelBlocks)
             {
 
                 //  mb.Sgen_pu = new Complex((mb.Pbg / 3) / Sbaz, 0) ;
-                mb.Sgen_pu = new Complex(mb.Pg / 3, mb.Qg / 3);
-                mb.Sload_pu = new Complex(mb.Pb / 3, mb.Qb / 3);
+                mb.Sgen_pu = new Complex(mb.Pg / 3/ SbazMaxPower, mb.Qg / 3);
+                mb.Sload_pu = new Complex(mb.Pb / 3/SbazMaxPower, mb.Qb / 3);
 
 
 
