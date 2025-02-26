@@ -20,7 +20,22 @@ namespace LoadFlow
             ModelBlocks = new List<ModelBlock>();
             CreateBlockHierarchy(0, network.Nodes.Single(n => n.Type == "External Network"), new Complex(0, 0));
             CreateBranches();
-            LoadFlowBFS();
+            LoadFlowBFS(1);
+            CalculateCurrents();
+            CalculateLosses();
+        }
+        /// <summary>
+        /// Model s popravkom izhodiščne napetosti
+        /// </summary>
+        /// <param name="_network"></param>
+        /// <param name="BaseVoltageCorrection">osnovna vrednos je 1</param>
+        public Model(Network _network,double BaseVoltageCorrection)
+        {
+            network = _network;
+            ModelBlocks = new List<ModelBlock>();
+            CreateBlockHierarchy(0, network.Nodes.Single(n => n.Type == "External Network"), new Complex(0, 0));
+            CreateBranches();
+            LoadFlowBFS(BaseVoltageCorrection);
             CalculateCurrents();
             CalculateLosses();
         }
@@ -125,31 +140,42 @@ namespace LoadFlow
             }
             
         }
-        public void LoadFlowBFS()
+        public void LoadFlowBFS(double BaseVoltageCorrection)
 
         {
 
             ///PB and PG are in KW so SBAZ is 1000 for normalisation
-            double Ubil = 20.0e3 / Math.Sqrt(3);
+            double Ubil = BaseVoltageCorrection*20.0e3 / Math.Sqrt(3);
             double UbazSN = 20000 / Math.Sqrt(3);
             double UbazNN = 400 / Math.Sqrt(3);
-            double Sbaz = 1000;
-            double SbazMaxPower = ModelBlocks.Max(m => m.Pb) ;
+           // double Sbaz = 1000;
+            double SbazMaxPower = ModelBlocks.Max(m => m.Pb)*1000 ;
             if(SbazMaxPower==0)
             {
-                SbazMaxPower = 1;
+                SbazMaxPower = ModelBlocks.Max(m => m.Pg) * 1000;
             }
-            double ZbazSN = Math.Pow(UbazSN, 2) / Sbaz;
-            double ZbazNN = Math.Pow(UbazNN, 2) / Sbaz;
-            double IbazSN = Sbaz* SbazMaxPower / UbazSN;
-            double IbazNN = Sbaz* SbazMaxPower / UbazNN;
+
+            
+
+            if(SbazMaxPower==0 ||SbazMaxPower>150000)
+            {
+                SbazMaxPower = 1000;
+            }
+            double ZbazSN = Math.Pow(UbazSN, 2) /  SbazMaxPower;
+            double ZbazNN = Math.Pow(UbazNN, 2) /  SbazMaxPower;
+            double IbazSN =  SbazMaxPower / UbazSN;
+            double IbazNN =  SbazMaxPower / UbazNN;
             int maxlevel = Convert.ToInt32(ModelBlocks.Max(n => n.Level));
             foreach (ModelBlock mb in ModelBlocks)
             {
+                if(mb.Pb>150)
+                {
+                    mb.Pb = 0;
 
+                }
                 //  mb.Sgen_pu = new Complex((mb.Pbg / 3) / Sbaz, 0) ;
-                mb.Sgen_pu = new Complex(mb.Pg / 3/ SbazMaxPower, mb.Qg / 3);
-                mb.Sload_pu = new Complex(mb.Pb / 3/SbazMaxPower, mb.Qb / 3);
+                mb.Sgen_pu = new Complex(mb.Pg*1000 / 3/ SbazMaxPower, mb.Qg*1000 / 3);
+                mb.Sload_pu = new Complex(mb.Pb*1000 / 3/SbazMaxPower, mb.Qb*1000 / 3);
 
 
 
